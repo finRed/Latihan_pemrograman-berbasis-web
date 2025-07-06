@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Form Pemesanan Tiket</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Form Kontak & Pemesanan Tiket</h2>
+    <form id="ticketForm" action="process.php" method="POST">
+      <!-- Data Kontak -->
+      <label for="nama">Nama:</label>
+      <input type="text" id="nama" name="nama" required>
+
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" required>
+
+      <!-- Data Tiket -->
+      <label for="jenis_tiket">Jenis Tiket:</label>
+      <select id="jenis_tiket" name="jenis_tiket" required>
+        <option value="">-- Pilih Jenis Tiket --</option>
+        <option value="Reguler">Reguler</option>
+        <option value="VIP">VIP</option>
+        <option value="VVIP">VVIP</option>
+      </select>
+
+      <label for="jumlah">Jumlah Tiket:</label>
+      <input type="number" id="jumlah" name="jumlah" min="1" required>
+
+      <label for="tanggal_pengambilan">Tanggal Pengambilan Tiket:</label>
+      <input type="date" id="tanggal_pengambilan" name="tanggal_pengambilan" required>
+
+      <button type="submit">Kirim & Pesan Tiket</button>
+    </form>
+
+    <!-- Ticket Display Section -->
+    <div id="ticketDisplay" style="display: none;">
+      <div class="ticket-header">
+        <h3>TICKET</h3>
+      </div>
+      <div id="ticketDetails">
+        <!-- Ticket details will be inserted here by JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('ticketForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      
+      fetch('process.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          const ticketDisplay = document.getElementById('ticketDisplay');
+          const ticketDetails = document.getElementById('ticketDetails');
+          
+          // Format the dates
+          const orderDate = new Date(data.tanggal_pesen).toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+          });
+          
+          const pickupDate = new Date(data.tanggal_pengambilan).toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+          });
+          
+          ticketDetails.innerHTML = `
+            <div class="ticket-info">
+              <p><strong>Nama</strong>${data.nama}</p>
+              <p><strong>Jenis Tiket</strong>${data.jenis_tiket}</p>
+              <p><strong>Tanggal Pemesanan</strong>${orderDate}</p>
+              <p><strong>Tanggal Pengambilan</strong>${pickupDate}</p>
+            </div>
+          `;
+          
+          ticketDisplay.style.display = 'flex';
+          this.reset();
+        } else {
+          alert('Terjadi kesalahan: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan saat memproses tiket');
+      });
+    });
+  </script>
+</body>
+</html>
